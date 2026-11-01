@@ -94,6 +94,7 @@
   ; already gone, for example after an install that stopped, is removed too. A silent update installs
   ; in the default folder; the page that chooses a folder refuses the folder with user data.
   !macro customInit
+    DetailPrint `openbot customInit instdir=$INSTDIR`
     ReadRegStr $1 SHCTX "${INSTALL_REGISTRY_KEY}" InstallLocation
     !insertmacro openBotHoldsUserData $1 $0
     ${if} $0 == "1"
@@ -118,6 +119,7 @@
   ; agents run from their workspaces. Then the registry no longer names that installation, so
   ; `uninstallOldVersion` does not run its uninstaller. The uninstaller keeps the default check.
   !macro customCheckAppRunning
+    DetailPrint `openbot customCheckAppRunning instdir=$INSTDIR dataFolderInstall=$openBotDataFolderInstall registered=$openBotRegisteredInDataFolder`
     !insertmacro IS_POWERSHELL_AVAILABLE
     ${if} $openBotRegisteredInDataFolder == "1"
     ${andIf} $openBotDataFolderInstall != ""
