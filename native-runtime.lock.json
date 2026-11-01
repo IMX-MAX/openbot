@@ -293,6 +293,14 @@
         "files": {
           "cua-driver.exe": "77f5cac754b42b6a8bae126414fc8f7487432ace93466967965188e24e9e53fb"
         }
+      },
+      "win32-arm64": {
+        "asset": "cua-driver-rs-0.34.0-windows-arm64-binary.zip",
+        "assetSha256": "df5786c6e7841d2f0d88f31c627c487181463ed99614b03efc0e907acfc698c3",
+        "downloadBytes": 29454268,
+        "files": {
+          "cua-driver.exe": "0af3e4d677b25bbbce32ed01c80aa8276cc8512d3f8a5b58433f26c0b0b349a4"
+        }
       }
     }
   },
