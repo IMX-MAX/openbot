@@ -37,6 +37,11 @@ const RUNTIME_PACKAGES: Readonly<Record<string, RuntimePackage>> = {
     integrity: "sha512-oZF1c9VPOKtMwn83Bboc5XSWL+76BRoyB3eUuVnCknBKxwSULZU2Foia9VHWzU+n4I12rPsP6z6H9Rp1hD9o8g==",
     files: [VOICE_RUNTIME_ADDON, "sherpa-onnx-c-api.dll", "onnxruntime.dll", "onnxruntime_providers_shared.dll"],
   },
+  "win32-arm64": {
+    name: "sherpa-onnx-win-arm64",
+    integrity: "sha512-IfdKVT7tT5xAnlBqNkc70amt+bbn2Wkg0v3hwzKZIIyzlsWIUT0U1eQ+90pE8U4CR0SxVAN1kCmv7dmmQ4o0Qg==",
+    files: [VOICE_RUNTIME_ADDON, "sherpa-onnx-c-api.dll", "onnxruntime.dll", "onnxruntime_providers_shared.dll"],
+  },
   "linux-x64": {
     name: "sherpa-onnx-linux-x64",
     integrity: "sha512-6plnhjagsSeTntCgnlag86hWbs/uZE9Crms1LgOb68/1nKsIQjMd+WG519m+aPwT6TrsBOiEMzrx41t8sL5L5g==",
@@ -60,7 +65,7 @@ const runtimePackage = RUNTIME_PACKAGES[target];
 
 if (!runtimePackage) {
   throw new Error(
-    `Voice assets can be prepared only on macOS (arm64, x64), Windows (x64) or Linux (x64, arm64), not ${target}.`,
+    `Voice assets can be prepared only on macOS (arm64, x64), Windows (x64, arm64) or Linux (x64, arm64), not ${target}.`,
   );
 }
 

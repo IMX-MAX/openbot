@@ -146,14 +146,15 @@ win:
   extraResources:
     - from: .openbot-build/voice/runtime
       to: voice/runtime
-    - from: build/remote-desktop-runtime
-      to: remote-desktop-runtime
-    - from: build/cua-driver/win32/x64
-      to: cua-driver/win32/x64
+    # The remote desktop runtime is published for Windows x64 only, so the ARM64 installer ships no
+    # `build/remote-desktop-runtime` entry and electron-builder skips a missing source with a
+    # warning, as the Linux arm64 AppImage does.
+    - from: build/cua-driver/win32/arm64
+      to: cua-driver/win32/arm64
   target:
     - target: nsis
       arch:
-        - x64
+        - arm64
 # The assisted installer lets the user choose the disk and folder. `build/installer.nsh` keeps it
 # per-user and moves the install into an `OpenBot` subfolder when the chosen folder holds other
 # files, because the uninstaller deletes the whole folder. An update reads the folder from

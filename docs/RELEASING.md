@@ -9,7 +9,7 @@ The mobile workflows are separate from the desktop tag release described below.
 OpenBot updates are published through GitHub Releases and installed with `electron-updater`.
 macOS requires every auto-updatable build to be signed with a Developer ID Application certificate.
 The release workflow also notarizes and staples the macOS application before publishing it. A Windows
-x64 tag release is signed with Azure Artifact Signing (see [Windows signing](#windows-signing)). Linux
+ARM64 tag release is signed with Azure Artifact Signing (see [Windows signing](#windows-signing)). Linux
 releases are unsigned, and the Linux AppImage carries no signature.
 All three platforms must pass before one release is published. A release also requires the pinned
 Sunshine and Moonlight Web runtime artifacts. GitHub Actions downloads those artifacts, checks SHA-256, and
@@ -543,7 +543,7 @@ The workflow:
    When `hdiutil create` fails with "Device not configured" or "Resource busy", or a network
    connection drops, the app build of each architecture starts again, up to 3 attempts, because
    these runner errors are not caused by the app;
-5. builds a signed Windows x64 NSIS installer on a GitHub Windows runner (unsigned in a dry run);
+5. builds a signed Windows ARM64 NSIS installer on a GitHub Windows ARM64 runner (unsigned in a dry run);
 6. builds unsigned Linux x64 and arm64 AppImages on GitHub Ubuntu 24.04 runners of each architecture,
    with the launch check under `xvfb-run`. A further check mounts each AppImage with only `fusermount3`,
    because its static runtime must start on systems with no libfuse2, such as Arch Linux and Omarchy;
@@ -652,7 +652,7 @@ Before creating the first tag or any later release:
    and that their install checks pass;
 7. smoke-test sign-in/setup, chat streaming, queues, attachments, agent messaging, browser control,
    context compaction, and the update popover;
-8. on macOS ARM64, macOS x64, Windows x64, and Linux x64, update from the last public version and confirm check,
+8. on macOS ARM64, macOS x64, Windows ARM64, and Linux x64, update from the last public version and confirm check,
    download, preparation, explicit restart, new version, local agents, conversations, and queues. A
    Linux build only auto-updates when it runs from the AppImage, which the runtime reports through
    `APPIMAGE`;
@@ -662,7 +662,7 @@ Before creating the first tag or any later release:
    macOS 26 with a separate `userData` directory;
 11. confirm the canary update does not crash in `CFURLConnectionSynchronous`, preserves data, starts
     the new version, and can run three provider downloads with restricted memory;
-12. on Windows 10 and 11 x64, confirm that normal exit, restart, and sign-out do not start NSIS, while
+12. on Windows 11 ARM64, confirm that normal exit, restart, and sign-out do not start NSIS, while
     `Restart and install` does start it, shows no installer page, and opens OpenBot again. With
     OpenBot closed and with it open, confirm that Open OpenBot on a `/join` page opens OpenBot and
     shows the invitation once, and that uninstall

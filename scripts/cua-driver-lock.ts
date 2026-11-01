@@ -2,7 +2,14 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { z } from "zod";
 
-export const cuaDriverTargets = ["darwin-arm64", "darwin-x64", "linux-x64", "linux-arm64", "win32-x64"] as const;
+export const cuaDriverTargets = [
+  "darwin-arm64",
+  "darwin-x64",
+  "linux-x64",
+  "linux-arm64",
+  "win32-x64",
+  "win32-arm64",
+] as const;
 export type CuaDriverTarget = (typeof cuaDriverTargets)[number];
 
 /** One file OpenBot copies out of a release archive, and the mode it gets on disk. */
@@ -91,6 +98,14 @@ export const CUA_DRIVER_TARGETS = {
     executable: "cua-driver.exe",
     files: [{ path: "cua-driver.exe", executable: true }],
   },
+  "win32-arm64": {
+    platform: "win32",
+    architecture: "arm64",
+    assetSuffix: "windows-arm64-binary.zip",
+    archive: "zip",
+    executable: "cua-driver.exe",
+    files: [{ path: "cua-driver.exe", executable: true }],
+  },
 } as const satisfies Record<CuaDriverTarget, CuaDriverTargetDescriptor>;
 
 /** The licence file the driver's repository publishes, shipped next to the binary. */
@@ -118,6 +133,7 @@ const cuaDriverLockSchema = z.object({
       "linux-x64": cuaDriverArtifactSchema,
       "linux-arm64": cuaDriverArtifactSchema,
       "win32-x64": cuaDriverArtifactSchema,
+      "win32-arm64": cuaDriverArtifactSchema,
     }),
   }),
 });

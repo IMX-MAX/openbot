@@ -27,7 +27,7 @@ const requireUpdateMetadata = process.argv.includes("--require-update-metadata")
 // A tag build signs with `electron-builder.windows-signing.yml`. Local and dry-run builds stay unsigned.
 const requireSignature = process.argv.includes("--require-signature");
 const appPathArgument = process.argv.slice(2).find((argument) => !argument.startsWith("--"));
-const appPath = resolve(appPathArgument ?? "dist/win-unpacked");
+const appPath = resolve(appPathArgument ?? "dist/win-arm64-unpacked");
 const executablePath = resolve(appPath, "OpenBot.exe");
 const resourcesPath = resolve(appPath, "resources");
 const voiceRuntimePath = resolve(resourcesPath, "voice/runtime");
@@ -56,30 +56,16 @@ await Promise.all([
   ...voiceRuntimeFiles.map((name) => access(resolve(voiceRuntimePath, name))),
   access(voiceHostPath),
   access(speechHostPath),
-  access(resolve(resourcesPath, "remote-desktop-runtime/licenses/Sunshine-GPL-3.0.txt")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/licenses/moonlight-web-stream-GPL-3.0.txt")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/source-manifest.json")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/DISTRIBUTION-SHA256SUMS.txt")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/sources/Sunshine-v2026.516.143833-source.tar.gz")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/sources/sunshine-v2026.516.143833-openbot.patch")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/sources/moonlight-web-stream-v2.10.0-openbot-source.tar.gz")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/sources/moonlight-web-stream-v2.10.0-openbot.patch")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/win32/x64/sunshine.exe")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/win32/x64/web-server.exe")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/win32/x64/streamer.exe")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/win32/x64/static/stream.html")),
-  access(
-    resolve(
-      resourcesPath,
-      "remote-desktop-runtime/win32/x64/assets/shaders/directx/convert_yuv420_packed_uv_type0_ps.hlsl",
-    ),
-  ),
-  access(resolve(resourcesPath, "remote-desktop-runtime/win32/x64/SHA256SUMS.txt")),
-  access(resolve(resourcesPath, "cua-driver/win32/x64/cua-driver.exe")),
-  access(resolve(resourcesPath, "cua-driver/win32/x64/LICENSE.md")),
+  // The remote desktop runtime is published for Windows x64 only, so the ARM64 installer ships no
+  // `remote-desktop-runtime` directory, as the Linux arm64 AppImage does.
+  access(resolve(resourcesPath, "cua-driver/win32/arm64/cua-driver.exe")),
+  access(resolve(resourcesPath, "cua-driver/win32/arm64/LICENSE.md")),
 ]);
 // Only this platform's driver ships, so a shared `extraResources` entry is a loud failure.
-await Promise.all(["darwin", "linux"].map((name) => assertAbsent(resolve(resourcesPath, "cua-driver", name))));
+await Promise.all(
+  ["darwin", "linux", join("win32", "x64")].map((name) => assertAbsent(resolve(resourcesPath, "cua-driver", name))),
+);
+await assertAbsent(resolve(resourcesPath, "remote-desktop-runtime"));
 await Promise.all(["codex", "claude", "grok"].map((name) => assertAbsent(resolve(resourcesPath, name))));
 await assertAbsent(resolve(resourcesPath, "cloudflared"));
 await assertAbsent(resolve(resourcesPath, "app.asar.unpacked/node_modules/@anthropic-ai/claude-agent-sdk-win32-x64"));
@@ -107,8 +93,8 @@ if (executable.toString("ascii", peOffset, peOffset + 4) !== "PE\0\0") {
   throw new Error("The executable has no PE header.");
 }
 const machine = executable.readUInt16LE(peOffset + 4);
-if (machine !== 0x8664) {
-  throw new Error(`Expected a Windows x64 executable, but its machine type is 0x${machine.toString(16)}.`);
+if (machine !== 0xaa64) {
+  throw new Error(`Expected a Windows ARM64 executable, but its machine type is 0x${machine.toString(16)}.`);
 }
 
 const versionInfo = JSON.parse(
@@ -137,12 +123,7 @@ if (updateMetadata !== null && !updateMetadata.includes("provider: github")) {
   throw new Error("The packaged update provider is not GitHub.");
 }
 
-const ownExecutables = [
-  executablePath,
-  ...["sunshine.exe", "web-server.exe", "streamer.exe"].map((name) =>
-    resolve(resourcesPath, "remote-desktop-runtime/win32/x64", name),
-  ),
-];
+const ownExecutables = [executablePath];
 if (requireSignature) {
   // An installed signed build accepts an update only from this publisher, so every executable must
   // carry the name that app-update.yml gives to the updater.
@@ -152,7 +133,7 @@ if (requireSignature) {
     throw new Error("app-update.yml must name exactly one publisher.");
   }
   const publisherName = publisherNames[0];
-  for (const path of [...ownExecutables, resolve(resourcesPath, "cua-driver/win32/x64/cua-driver.exe")]) {
+  for (const path of [...ownExecutables, resolve(resourcesPath, "cua-driver/win32/arm64/cua-driver.exe")]) {
     verifyAuthenticode(path, "Valid", publisherName);
   }
 } else {
@@ -179,9 +160,7 @@ for (const [fuse, expected] of expectedFuses) {
 await verifyLaunch(executablePath);
 
 logger.info(`Verified ${appPath}`);
-logger.info(
-  `OpenBot ${packageJson.version} · Windows x64 · metadata · GPL remote runtime · ASAR integrity · hardened fuses · launch`,
-);
+logger.info(`OpenBot ${packageJson.version} · Windows ARM64 · metadata · ASAR integrity · hardened fuses · launch`);
 
 function expectEqual(actual: unknown, expected: unknown, label: string): void {
   if (actual !== expected) {

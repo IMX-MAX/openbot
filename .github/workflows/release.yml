@@ -555,9 +555,9 @@ jobs:
           retention-days: 7
 
   windows:
-    name: Build ${{ github.event_name == 'push' && 'signed' || 'unsigned' }} Windows x64 release
+    name: Build ${{ github.event_name == 'push' && 'signed' || 'unsigned' }} Windows ARM64 release
     needs: validate
-    runs-on: windows-2025
+    runs-on: windows-11-arm
     timeout-minutes: 35
     # This job reads no secrets. The environment limits a tag build to tags, and the Azure federated
     # credential trusts only this environment, so a dry run has no environment and stays unsigned.
@@ -584,13 +584,8 @@ jobs:
       - name: Run Windows checks
         run: bun run lint
 
-      # Without a token, the GitHub API rate limit for the runner's address can refuse the release
-      # lookup with HTTP 403.
-      - name: Install and verify remote desktop runtime
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: bun scripts/install-remote-desktop-runtime.ts win32 x64 && bun run verify:remote-desktop-runtime --windows
-
+      # The remote desktop runtime is published for Windows x64 only, so the ARM64 build ships no
+      # runtime of it and has nothing to install or verify here.
       - name: Install and verify provider control artifacts
         run: |
           bun scripts/install-codex-runtime.ts win32 x64
@@ -651,7 +646,7 @@ jobs:
           # A signed install verifies the next update's installer against that publisher.
           $signature = Get-AuthenticodeSignature -LiteralPath $installers[0].FullName
           if ($env:WINDOWS_SIGNED -eq "true") {
-            $applicationSigner = (Get-AuthenticodeSignature -LiteralPath dist/win-unpacked/OpenBot.exe).SignerCertificate.Subject
+            $applicationSigner = (Get-AuthenticodeSignature -LiteralPath dist/win-arm64-unpacked/OpenBot.exe).SignerCertificate.Subject
             if ($signature.Status -ne "Valid" -or $signature.SignerCertificate.Subject -ne $applicationSigner) {
               Write-Error "The installer signer differs from the application signer: $($signature.Status) $($signature.SignerCertificate.Subject)."
             }
@@ -696,7 +691,7 @@ jobs:
       - name: Generate Windows release SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
-          path: dist/win-unpacked
+          path: dist/win-arm64-unpacked
           format: spdx-json
           output-file: dist/OpenBot-${{ env.RELEASE_VERSION }}-windows.spdx.json
           artifact-name: OpenBot-${{ env.RELEASE_VERSION }}-Windows-SBOM

@@ -51,11 +51,12 @@ if (platform === "linux" || platform === "linux-arm64") {
   throw new Error(`Missing blockmap for ${basename(artifactPath)}.`);
 }
 
-// Each macOS job builds its own architecture, and electron-builder writes x64 to `dist/mac`.
+// Each macOS job builds its own architecture, and electron-builder writes x64 to `dist/mac`. The
+// Windows installer is ARM64 only, so electron-builder writes `dist/win-arm64-unpacked`.
 const resourcesRoot =
   platform === "macos"
     ? join(distRoot, process.arch === "arm64" ? "mac-arm64" : "mac", "OpenBot.app", "Contents", "Resources")
-    : join(distRoot, platform === "windows" ? "win-unpacked" : `${platform}-unpacked`, "resources");
+    : join(distRoot, platform === "windows" ? "win-arm64-unpacked" : `${platform}-unpacked`, "resources");
 // Every platform ships the voice runtime and downloads the model on first use.
 if (!existsSync(join(resourcesRoot, "voice", "runtime", "sherpa-onnx.node"))) {
   throw new Error("The packaged application has no voice runtime.");
