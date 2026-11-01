@@ -106,7 +106,9 @@ function powershell(script: string): string {
 function runInstaller(file: string, args: string): Promise<number> {
   return new Promise((resolvePromise, reject) => {
     const child = spawn(file, [args], { windowsVerbatimArguments: true, stdio: "ignore" });
+    child.once("spawn", () => logger.info("Installer started", { file, args }));
     const timer = setTimeout(() => {
+      logger.error("Installer did not exit; it probably shows a dialog.", { file, args });
       child.kill();
       reject(new Error(`${file} ${args} did not exit; it probably shows a dialog.`));
     }, installerLimitMs);
@@ -116,6 +118,7 @@ function runInstaller(file: string, args: string): Promise<number> {
     });
     child.once("exit", (code) => {
       clearTimeout(timer);
+      logger.info("Installer exited", { file, args, code });
       resolvePromise(code ?? -1);
     });
   });
