@@ -38,6 +38,7 @@
 !macroend
 
 !macro customInstall
+  DetailPrint `openbot customInstall arch=$architectureInstallDir instdir=$INSTDIR silent=$0`
   WriteRegStr SHCTX "Software\Classes\openbot" "" "URL:OpenBot invitations"
   WriteRegStr SHCTX "Software\Classes\openbot" "URL Protocol" ""
   WriteRegStr SHCTX "Software\Classes\openbot\DefaultIcon" "" "$appExe,0"
